@@ -1,4 +1,5 @@
 import { md5, stripProductDelimiters, setCookie, getCookie, deleteCookie, getFormattedDate, parseListToKeyValuePairs } from './utils.js';
+import { resolveDataElement } from '../legacy/data-elements.js';
 import { validateData, initWarnings, dtmCodeDesc } from './validation.js';
 
 export const pageDataTracker = {
@@ -111,7 +112,7 @@ export const pageDataTracker = {
 
             window.eventData = data ? data : {};
             window.eventData.eventName = event;
-            if (!(_satellite && _satellite.getVar && _satellite.getVar('blacklisted'))) {
+            if (!resolveDataElement('blacklisted')) {
                 this.handleEventData(event, data);
 
                 if (event === 'newPage') {
@@ -862,7 +863,7 @@ export const pageDataTracker = {
 
         for (var i in vars) {
             // Access _satellite globally. It should be available via legacy ecosystem.
-            s[i] = s[i] ? s[i] : (window._satellite && _satellite.getVar ? _satellite.getVar(vars[i]) : '');
+            s[i] = s[i] ? s[i] : resolveDataElement(vars[i]);
         }
     }
 };

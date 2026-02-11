@@ -69,7 +69,7 @@ export const rules = {
         events: ["event286"],
         run: function (s) {
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event290', ',', 1);
-            s.events = s.apl(s.events, 'event290=' + _satellite.getVar("Education - Time to Complete"), ',', 1);
+            s.events = s.apl(s.events, 'event290=' + resolveDataElement("Education - Time to Complete"), ',', 1);
         }
     },
     accountAssociationStart: {
@@ -157,9 +157,9 @@ export const rules = {
         events: ["event252"],
         run: function (s) {
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event277', ',', 1);
-            s.events = s.apl(s.events, 'event277=' + _satellite.getVar("Education - Time Since Last Attempt"), ',', 1);
+            s.events = s.apl(s.events, 'event277=' + resolveDataElement("Education - Time Since Last Attempt"), ',', 1);
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event290', ',', 1);
-            s.events = s.apl(s.events, 'event290=' + _satellite.getVar("Education - Time to Complete"), ',', 1);
+            s.events = s.apl(s.events, 'event290=' + resolveDataElement("Education - Time to Complete"), ',', 1);
         }
     },
     assignmentCreated: {
@@ -192,7 +192,7 @@ export const rules = {
         events: ["event259"],
         run: function (s) {
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event260', ',', 1);
-            s.events = s.apl(s.events, 'event260=' + _satellite.getVar("Education - Assignment Numeric Grade"), ',', 1);
+            s.events = s.apl(s.events, 'event260=' + resolveDataElement("Education - Assignment Numeric Grade"), ',', 1);
         }
     },
     assignmentNumericGrade: {
@@ -209,7 +209,7 @@ export const rules = {
         },
         run: function (s) {
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event260', ',', 1);
-            s.events = s.apl(s.events, 'event260=' + _satellite.getVar("Education - Assignment Numeric Grade"), ',', 1);
+            s.events = s.apl(s.events, 'event260=' + resolveDataElement("Education - Assignment Numeric Grade"), ',', 1);
         }
     },
     assignmentReassigned: {
@@ -288,14 +288,14 @@ export const rules = {
     buttonClick: {
         events: ["event204"],
         run: function (s) {
-            s.eVar124 = _satellite.getVar('Event - Button Type');
+            s.eVar124 = resolveDataElement('Event - Button Type');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar124', ',', 2);
         }
     },
     buttonHover: {
         events: ["event269"],
         run: function (s) {
-            s.eVar124 = _satellite.getVar('Event - Button Type');
+            s.eVar124 = resolveDataElement('Event - Button Type');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar124', ',', 2);
         }
     },
@@ -322,7 +322,7 @@ export const rules = {
         events: ["event271"],
         run: function (s) {
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event260', ',', 1);
-            s.events = s.apl(s.events, 'event260=' + _satellite.getVar("Education - Assignment Numeric Grade"), ',', 1);
+            s.events = s.apl(s.events, 'event260=' + resolveDataElement("Education - Assignment Numeric Grade"), ',', 1);
         }
     },
     claimProfile: {
@@ -334,7 +334,7 @@ export const rules = {
     closeTab: {
         events: ["event215"],
         run: function (s) {
-            s.eVar143 = _satellite.getVar('Page - Tabs');
+            s.eVar143 = resolveDataElement('Page - Tabs');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar143', ',', 2);
         }
     },
@@ -351,7 +351,7 @@ export const rules = {
         events: ["event289"],
         run: function (s) {
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event290', ',', 1);
-            s.events = s.apl(s.events, 'event290=' + _satellite.getVar("Education - Time to Complete"), ',', 1);
+            s.events = s.apl(s.events, 'event290=' + resolveDataElement("Education - Time to Complete"), ',', 1);
         }
     },
     compLogin: {
@@ -375,7 +375,7 @@ export const rules = {
     contentAdditionStep: {
         events: ["event189"],
         run: function (s) {
-            s.eVar112 = _satellite.getVar('Event - Step');
+            s.eVar112 = resolveDataElement('Event - Step');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar112', ',', 2);
         }
     },
@@ -409,13 +409,13 @@ export const rules = {
         },
         events: ["event39"],
         run: function (s) {
-            var rows = _satellite.getVar('Event - Rows Exported');
+            var rows = resolveDataElement('Event - Rows Exported');
             if (rows) {
                 s.events = s.apl(s.events, 'event246=' + rows, ',', 2);
                 s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event246', ',', 2);
             }
 
-            var rowsFailed = _satellite.getVar('Event - Rows Exported Failed');
+            var rowsFailed = resolveDataElement('Event - Rows Exported Failed');
             if (rowsFailed) {
                 s.events = s.apl(s.events, 'event334=' + rowsFailed, ',', 2);
                 s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event334', ',', 2);
@@ -439,7 +439,7 @@ export const rules = {
     contentInteractionStep: {
         events: ["event189"],
         run: function (s) {
-            s.eVar112 = _satellite.getVar('Event - Step');
+            s.eVar112 = resolveDataElement('Event - Step');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar112', ',', 2);
         }
     },
@@ -480,7 +480,7 @@ export const rules = {
     },
     conversionDriverClick: {
         run: function (s) {
-            s.eVar103 = _satellite.getVar('Event - Conversion Driver');
+            s.eVar103 = resolveDataElement('Event - Conversion Driver');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar103', ',', 2);
 
             s.eVar110 = 'D=pageName';
@@ -565,11 +565,11 @@ export const rules = {
         events: ["event272"],
         run: function (s) {
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event260', ',', 1);
-            s.events = s.apl(s.events, 'event260=' + _satellite.getVar("Education - Assignment Numeric Grade"), ',', 1);
+            s.events = s.apl(s.events, 'event260=' + resolveDataElement("Education - Assignment Numeric Grade"), ',', 1);
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event290', ',', 1);
-            s.events = s.apl(s.events, 'event290=' + _satellite.getVar("Education - Time to Complete"), ',', 1);
+            s.events = s.apl(s.events, 'event290=' + resolveDataElement("Education - Time to Complete"), ',', 1);
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event277', ',', 1);
-            s.events = s.apl(s.events, 'event277=' + _satellite.getVar("Education - Time Since Last Attempt"), ',', 1);
+            s.events = s.apl(s.events, 'event277=' + resolveDataElement("Education - Time Since Last Attempt"), ',', 1);
         }
     },
     examCreated: {
@@ -898,9 +898,9 @@ export const rules = {
         events: ["event281"],
         run: function (s) {
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event260', ',', 1);
-            s.events = s.apl(s.events, 'event260=' + _satellite.getVar("Education - Assignment Numeric Grade"), ',', 1);
+            s.events = s.apl(s.events, 'event260=' + resolveDataElement("Education - Assignment Numeric Grade"), ',', 1);
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event290', ',', 1);
-            s.events = s.apl(s.events, 'event290=' + _satellite.getVar("Education - Time to Complete"), ',', 1);
+            s.events = s.apl(s.events, 'event290=' + resolveDataElement("Education - Time to Complete"), ',', 1);
         }
     },
     packetReceived: {
@@ -1087,7 +1087,7 @@ export const rules = {
         events: ["event283"],
         run: function (s) {
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event290', ',', 1);
-            s.events = s.apl(s.events, 'event290=' + _satellite.getVar("Education - Time to Complete"), ',', 1);
+            s.events = s.apl(s.events, 'event290=' + resolveDataElement("Education - Time to Complete"), ',', 1);
         }
     },
     packetAssigned: {
@@ -1116,11 +1116,11 @@ export const rules = {
         events: ["event284", "event292"],
         run: function (s) {
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event291', ',', 1);
-            s.events = s.apl(s.events, 'event291=' + _satellite.getVar("Education - Maximum Packets Issued"), ',', 1);
+            s.events = s.apl(s.events, 'event291=' + resolveDataElement("Education - Maximum Packets Issued"), ',', 1);
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event293', ',', 1);
-            s.events = s.apl(s.events, 'event293=' + _satellite.getVar("Education - Benchmark Score"), ',', 1);
+            s.events = s.apl(s.events, 'event293=' + resolveDataElement("Education - Benchmark Score"), ',', 1);
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event293', ',', 1);
-            s.events = s.apl(s.events, 'event294=' + _satellite.getVar("Education - Days Until Due"), ',', 1);
+            s.events = s.apl(s.events, 'event294=' + resolveDataElement("Education - Days Until Due"), ',', 1);
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event294', ',', 1);
         }
     },
@@ -1275,7 +1275,7 @@ export const rules = {
         events: ["event288"],
         run: function (s) {
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event290', ',', 1);
-            s.events = s.apl(s.events, 'event290=' + _satellite.getVar("Education - Time to Complete"), ',', 1);
+            s.events = s.apl(s.events, 'event290=' + resolveDataElement("Education - Time to Complete"), ',', 1);
         }
     },
     SurveySubmission: {
@@ -1289,30 +1289,30 @@ export const rules = {
     sync: {
         events: ["event208"],
         run: function (s) {
-            s.eVar137 = _satellite.getVar('Event - Sync Method');
+            s.eVar137 = resolveDataElement('Event - Sync Method');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar137', ',', 2);
 
-            s.eVar138 = _satellite.getVar('Event - Sync Duration');
+            s.eVar138 = resolveDataElement('Event - Sync Duration');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar138', ',', 2);
         }
     },
     syncFailure: {
         events: ["event209"],
         run: function (s) {
-            s.eVar137 = _satellite.getVar('Event - Sync Method');
+            s.eVar137 = resolveDataElement('Event - Sync Method');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar137', ',', 2);
 
-            s.eVar138 = _satellite.getVar('Event - Sync Duration');
+            s.eVar138 = resolveDataElement('Event - Sync Duration');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar138', ',', 2);
         }
     },
     syncStart: {
         events: ["event207"],
         run: function (s) {
-            s.eVar137 = _satellite.getVar('Event - Sync Method');
+            s.eVar137 = resolveDataElement('Event - Sync Method');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar137', ',', 2);
 
-            s.eVar138 = _satellite.getVar('Event - Sync Duration');
+            s.eVar138 = resolveDataElement('Event - Sync Duration');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar138', ',', 2);
         }
     },
@@ -1390,14 +1390,14 @@ export const rules = {
     widgetClick: {
         events: ["event179"],
         run: function (s) {
-            s.list2 = _satellite.getVar('Page - Widget Names');
+            s.list2 = resolveDataElement('Page - Widget Names');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'list2', ',', 2);
         }
     },
     widgetImpression: {
         events: ["event178"],
         run: function (s) {
-            s.list2 = _satellite.getVar('Page - Widget Names');
+            s.list2 = resolveDataElement('Page - Widget Names');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'list2', ',', 2);
         }
     }

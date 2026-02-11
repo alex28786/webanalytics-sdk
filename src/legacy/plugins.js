@@ -4,6 +4,8 @@
  * Extracted from rule-pageDataTracker.js
  */
 
+import { resolveDataElement } from './data-elements.js';
+
 export function attachPlugins(s) {
     if (!s) return;
 
@@ -357,7 +359,7 @@ export function attachPlugins(s) {
         s.c_wr = s.c_w;
         s.__ccucw = true;
         function c_w(k, v, e) {
-            var ca = (window._satellite && _satellite.getVar) ? _satellite.getVar('Consent Adobe') : null;
+            var ca = resolveDataElement('Consent Adobe');
             if (ca && ca.aa === false) {
                 return false;
             }

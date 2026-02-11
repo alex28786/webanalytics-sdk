@@ -1,4 +1,5 @@
 import { pageDataTracker } from '../core/tracker.js';
+import { resolveDataElement } from './data-elements.js';
 
 export function initDoPlugins(s) {
     if (!s) return;
@@ -63,7 +64,7 @@ export function initDoPlugins(s) {
             s.list3 = splitted.join('|');
         }
 
-        s.eVar21 = _satellite.getVar('Promo - Clicked ID');
+        s.eVar21 = resolveDataElement('Promo - Clicked ID');
         if (s.eVar21) {
             s.list3 = s.eVar21 = s.productPrefix(s.eVar21);
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar21', ',', 2);
@@ -118,7 +119,7 @@ export function initDoPlugins(s) {
             */
 
         // account remap
-        var accountRemap = _satellite.getVar('Account');
+        var accountRemap = resolveDataElement('Account');
         if (accountRemap) {
             s.account = accountRemap;
         }
@@ -176,7 +177,7 @@ export function initDoPlugins(s) {
             }
 
             // unique web user metrics
-            var userId = _satellite.getVar('Visitor - User ID');
+            var userId = resolveDataElement('Visitor - User ID');
             var d = new Date();
             if (userId) {
                 userId = userId.toLowerCase();
@@ -201,7 +202,7 @@ export function initDoPlugins(s) {
             }
 
             // unique account id
-            var uniqueAccountId = _satellite.getVar('Visitor - Account ID');
+            var uniqueAccountId = resolveDataElement('Visitor - Account ID');
             if (uniqueAccountId) {
                 uniqueAccountId = uniqueAccountId.toLowerCase();
                 uniqueAccountId += d.getFullYear();
@@ -253,8 +254,8 @@ export function initDoPlugins(s) {
                     }
                 }
 
-                var resultsOnPage = _satellite.getVar('Search - Results per Page')
-                    , currentPage = s.getValOnce(((!s.eVar19 || (s.eVar19 != s.prop21)) ? s.prop21 : '') + ':' + _satellite.getVar('Search - Current Page'), 'e13', 0);
+                var resultsOnPage = resolveDataElement('Search - Results per Page')
+                    , currentPage = s.getValOnce(((!s.eVar19 || (s.eVar19 != s.prop21)) ? s.prop21 : '') + ':' + resolveDataElement('Search - Current Page'), 'e13', 0);
                 if (currentPage && resultsOnPage) {
                     s.events = s.apl(s.events, 'event13=' + resultsOnPage, ',', 2);
                 }
@@ -305,7 +306,7 @@ export function initDoPlugins(s) {
             }
 
             // time between
-            var ts = _satellite.getVar('Page - Load Timestamp')
+            var ts = resolveDataElement('Page - Load Timestamp')
                 , lts = s.getPreviousValue(ts, 'v68', '') || ts
                 , vts = s.c_r('v31') || ts;
 
@@ -486,7 +487,7 @@ export function initDoPlugins(s) {
                 s.events = s.apl(s.events, 'event239', ',', 2);
                 s.events = s.apl(s.events, 'event240', ',', 2);
 
-                var sessionId = _satellite.getVar('Visitor - App Session ID');
+                var sessionId = resolveDataElement('Visitor - App Session ID');
 
                 // calculate id for unique content views
                 var uniqueContentSessId = pageDataTracker.md5((sessionId ? sessionId : 'none') + contentItem.id).substring(0, 20);
@@ -612,7 +613,7 @@ export function initDoPlugins(s) {
 
         // search result clicks
         if (s.eVar15) {
-            if (s.getValOnce(_satellite.getVar('Search - Criteria'), 'e78', 0)) {
+            if (s.getValOnce(resolveDataElement('Search - Criteria'), 'e78', 0)) {
                 s.events = s.apl(s.events, 'event78', ',', 2);
                 s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event78', ',', 2);
                 if (window.eventData && eventData.search) {
@@ -629,7 +630,7 @@ export function initDoPlugins(s) {
         }
 
         // forms
-        var formName = _satellite.getVar('Form - Step + Name');
+        var formName = resolveDataElement('Form - Step + Name');
         if (formName && formName === 'login:start') {
             s.linkTrackVars = s.apl(s.linkTrackVars, 'events', ',', 2);
             s.events = s.apl(s.events, 'event141', ',', 2);
@@ -761,13 +762,13 @@ export function initDoPlugins(s) {
         s.trackEventsList(s, 'prop69');
 
         // online state
-        s.prop65 = _satellite.getVar('Page - Online State');
+        s.prop65 = resolveDataElement('Page - Online State');
         if (s.prop65) {
             s.linkTrackVars = s.apl(s.linkTrackVars, 'prop65', ',', 2);
         }
 
         // copy user ids - a&e ids
-        var userId = _satellite.getVar('Visitor - User ID');
+        var userId = resolveDataElement('Visitor - User ID');
         var match = userId.match(/^ae:([0-9]+)$/i);
         if (match && match.length > 1) {
             s.prop72 = match[1];
@@ -862,10 +863,10 @@ export function initDoPlugins(s) {
             s.linkTrackVars = s.apl(s.linkTrackVars, 'prop37', ',', 2);
         }
 
-        s.prop38 = _satellite.getVar("Maturity Level");
+        s.prop38 = resolveDataElement("Maturity Level");
         s.linkTrackVars = s.apl(s.linkTrackVars, 'prop38', ',', 2);
 
-        s.prop39 = _satellite.getVar("Source");
+        s.prop39 = resolveDataElement("Source");
         s.linkTrackVars = s.apl(s.linkTrackVars, 'prop39', ',', 2);
         if (s.prop39 && s.prop39 == 'id') {
             s.prop42 = s.eVar33 ? 'D=v33' : '';
@@ -878,6 +879,6 @@ export function initDoPlugins(s) {
         s.prop3 = s.getKPIName(s.events);
 
         // blacklisted
-        s.abort = _satellite.getVar('s_blacklist');
+        s.abort = resolveDataElement('s_blacklist');
     };
 }
