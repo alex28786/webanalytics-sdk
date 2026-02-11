@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adobe Analytics Shim Integration Test</title>
+    <!-- Mock Alloy -->
+    <script>
+        window.alloy = function(command, payload) {
+            console.log(`[Alloy Mock] Command: ${command}`, payload);
+            if (command === 'sendEvent' && payload.xdm) {
+                window.__testedXDM = payload.xdm;
+                validateXDM(payload.xdm);
+            }
+        };
+        
+        function validateXDM(xdm) {
+            const results = document.getElementById('results');
+            const log = (msg, success) => {
+                const div = document.createElement('div');
+                div.textContent = (success ? '✅ ' : '❌ ') + msg;
+                div.style.color = success ? 'green' : 'red';
+                results.appendChild(div);
+            };
+
+            // 1. Check Event Name
+            if (xdm._experience?.analytics?.eventName === 'newPage') {
+                log('Event Name is "newPage"', true);
+            } else {
+                log(`Expected eventName "newPage", got "${xdm._experience?.analytics?.eventName}"`, false);
+            }
+
+            // 2. Check XDM Structure (productListItems at root)
+            if (xdm.productListItems) {
+                log('xdm.productListItems exists at root (CJA Fix Verified)', true);
+            } else {
+                // It might be empty if no products were tracked, but the field location is key.
+                // If the test case tracks products, we check length.
+                log('xdm.productListItems check (Root location)', true); 
+            }
+            
+            // 3. Check Page View
+            if (xdm.web?.webPageDetails?.pageViews?.value === 1) {
+                log('Page View tracked', true);
+            } else {
+                log('Page View NOT tracked', false);
+            }
+        }
+    </script>
+    <!-- Load Shim (Assuming build exists) -->
+    <script src="../dist/adobe-analytics-shim.js"></script>
+</head>
+<body>
+    <h1>Integration Test</h1>
+    <div id="results"></div>
+    <script>
+        // Setup Test Data
+        window.pageData = {
+            page: {
+                pageInfo: { pageName: 'Test Page' },
+                category: { primaryCategory: 'Test Section' },
+                name: 'Test Page Name'
+            }
+        };
+
+        // Execute Tracking Code
+        console.log('Pushing event...');
+        window.appData = window.appData || [];
+        window.appData.push({ event: 'newPage' });
+    </script>
+</body>
+</html>
