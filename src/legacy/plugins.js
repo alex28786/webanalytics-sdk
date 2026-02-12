@@ -70,7 +70,7 @@ export function attachPlugins(s) {
         } catch (e) {
             s[propName] = '';
             // _satellite.notify("s.trackEventsList: " + e.message); // shim shouldn't rely on _satellite?
-            console.warn("s.trackEventsList: " + e.message);
+            _satellite.logger.warn("s.trackEventsList: " + e.message);
         }
     };
     s.isDST = function (d) {

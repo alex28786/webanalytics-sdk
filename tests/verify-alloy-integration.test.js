@@ -1,53 +1,29 @@
-
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Window } from 'happy-dom';
-import { createAlloyMock } from './helpers/alloy-mock.js';
-import { expectEVar, expectAnalyticsEvent } from './helpers/xdm-validators.js';
+import { describe, it, beforeEach, afterEach } from 'vitest';
 import { expectDataBeacon } from './helpers/beacon-validator.js';
+import { setupTestWindow, teardownTestWindow, loadTrackingLibrary } from './helpers/test-setup.js';
 
 describe('Alloy Integration Verification', () => {
-    let win;
 
-    beforeEach(async () => {
-        // Setup happy-dom environment
-        win = new Window();
-        global.window = win;
-        global.document = win.document;
-        global.localStorage = win.localStorage;
-        global.sessionStorage = win.sessionStorage;
-        window.pageData = global.pageData = {};
-        window.eventData = global.eventData = {};
-
-        // Mock Alloy
-        win.alloy = createAlloyMock();
-
-        // Reset modules so we get fresh state for each test
-        vi.resetModules();
+    beforeEach(() => {
+        setupTestWindow();
     });
 
     afterEach(() => {
-        vi.restoreAllMocks();
-        delete global.pageData;
-        delete global.window;
-        delete global.document;
-        delete global.localStorage;
-        delete global.sessionStorage;
-        delete global._satellite;
+        teardownTestWindow();
     });
 
     it('should map pageLoad data to correct XDM values via the hook', async () => {
-        // Load the main index entry point to initialize the shim
-        await import('../src/index.js');
+        await loadTrackingLibrary();
 
-        window.pageData = global.pageData = {
+        // Scenario 1: Page Load
+        window.pageData = {
             page: {
                 name: 'testsite',
                 productName: 'sb',
-                loadTimestamp: Date.now().toString() // needed to avoid warnings/errors in tracker
+                businessUnit: 'els:rp:bau'
             }
-        }
+        };
 
-        window.appData = window.appData || [];
         window.appData.push({ event: 'pageLoad' });
 
         expectDataBeacon({
@@ -58,14 +34,14 @@ describe('Alloy Integration Verification', () => {
     });
 
     it('should handle complex event and product structures', async () => {
-        // Load the main index entry point
-        await import('../src/index.js');
+        await loadTrackingLibrary();
 
         // Setup complex data
-        window.pageData = global.pageData = {
+        window.pageData = {
             page: {
                 name: 'product-page',
-                productName: 'sb'
+                productName: 'sb',
+                businessUnit: 'els:rp:bau'
             },
             content: [{
                 id: 'my-id',
@@ -74,7 +50,6 @@ describe('Alloy Integration Verification', () => {
             }]
         };
 
-        window.appData = window.appData || [];
         window.appData.push({ event: 'pageLoad' });
 
         // Validate
@@ -91,29 +66,29 @@ describe('Alloy Integration Verification', () => {
     });
 
     it('should handle multiple events', async () => {
-        // Load the main index entry point
-        await import('../src/index.js');
+        await loadTrackingLibrary();
 
         // Setup complex data
-        window.pageData = global.pageData = {
+        window.pageData = {
             page: {
                 name: 'product-page',
                 productName: 'sb'
             }
         };
 
-        window.appData = window.appData || [];
         window.appData.push({ event: 'pageLoad' });
 
-        await new Promise(resolve => setTimeout(resolve, 10));
-
-        window.appData.push({ event: 'newPage', page: { name: 'testsite' } });
-
+        // First beacon validation
         expectDataBeacon({
             v4: 'sb',
             v11: 'sb:product-page',
             events: ['event27']
         });
+
+        // Second event
+        window.appData.push({ event: 'newPage', page: { name: 'testsite' } });
+
+        // Second beacon validation
         expectDataBeacon({
             v4: 'sb',
             v11: 'sb:testsite',

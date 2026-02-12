@@ -1,17 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { setupTestWindow, teardownTestWindow } from './helpers/test-setup.js';
+
 import { resolveDataElement } from '../src/legacy/data-elements.js';
 import { applyRuleToS } from '../src/legacy/rules.js';
 import { createHitS } from '../src/legacy/s-code.js';
 
 describe('Data Elements Overrides', () => {
     beforeEach(() => {
-        window._satellite = {
-            getVar: vi.fn()
-        };
+        setupTestWindow();
     });
 
     afterEach(() => {
-        delete window._satellite;
+        teardownTestWindow();
     });
 
     it('should resolve codified data element if no override', () => {
@@ -33,9 +33,15 @@ describe('Data Elements Overrides', () => {
 });
 
 describe('Rules Overrides', () => {
-    // We can't easily test index.js logic without full DOM/Alloy setup or mocking modules.
-    // usage logic is: index.js calls _satellite.getVar(eventName) -> rule.
-    // We can test applyRuleToS works with a custom rule object.
+    beforeEach(() => {
+        setupTestWindow();
+        // createHitS needs window.s to exist (it does Object.create(window.s || {}))
+        window.s = {};
+    });
+
+    afterEach(() => {
+        teardownTestWindow();
+    });
 
     it('applyRuleToS should work with custom rule object', () => {
         const s = createHitS({}, "testEvent");

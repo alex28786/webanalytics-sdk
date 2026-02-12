@@ -336,8 +336,7 @@ export const dataElements = {
         return t.join("^")
     },
     "mcmid - pass params": function () {
-        return console.log("\xa5\xa5\xa5\xa5\xa5\xa5\xa5\xa5\xa5\xa5\xa5 code executed data element ?????????????"),
-            !0
+        return !0
     },
     "Visitor - Department Name": function () { return path("pageData.visitor.departmentName"); },
     "Search - Within Results Criteria": function () { return path("pageData.search.withinResultsCriteria"); },
@@ -479,7 +478,7 @@ export function resolveDataElement(name) {
             try {
                 return item();
             } catch (e) {
-                console.error(`Error executing internal data element "${name}":`, e);
+                _satellite.logger.error(`Error executing internal data element "${name}":`, e);
                 return '';
             }
         } else {

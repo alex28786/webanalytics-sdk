@@ -1,31 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Window } from 'happy-dom';
+import { setupTestWindow, teardownTestWindow } from './helpers/test-setup.js';
 
 describe('Plugins Attachment', () => {
     let win;
 
     beforeEach(async () => {
-        // Create a fresh DOM environment
-        win = new Window();
-        global.window = win;
-        global.document = win.document;
-        global.localStorage = win.localStorage;
-
-        // Mock console
-        global.console = { ...console, error: vi.fn(), log: vi.fn(), warn: vi.fn() };
-
-        // Mock window.alloy
-        win.alloy = vi.fn(() => Promise.resolve({}));
+        setupTestWindow();
 
         // We need to reset modules to run index.js again
         vi.resetModules();
     });
 
     afterEach(() => {
-        vi.restoreAllMocks();
-        delete global.window;
-        delete global.document;
-        delete global.localStorage;
+        teardownTestWindow();
     });
 
     it('should attach legacy plugins to window.s', async () => {

@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { setupTestWindow, teardownTestWindow } from './helpers/test-setup.js';
 import { mapIntoXdm } from '../src/xdm/mapper';
 
 describe('mapIntoXdm', () => {
@@ -6,6 +7,7 @@ describe('mapIntoXdm', () => {
     let xdm;
 
     beforeEach(() => {
+        setupTestWindow();
         s = {
             linkTrackVars: 'products,events,eVar1',
             linkTrackEvents: 'event1',
@@ -17,6 +19,10 @@ describe('mapIntoXdm', () => {
             linkName: 'Test Link'
         };
         xdm = {};
+    });
+
+    afterEach(() => {
+        teardownTestWindow();
     });
 
     it('should map products to xdm.productListItems (CJA Compliance Fix)', () => {

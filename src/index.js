@@ -24,7 +24,6 @@ if (!window.__sShim) {
                     localStorage.setItem("aa_ecid", result.identity.ECID);
                 }
             })
-            .catch(console.error);
     }
 })();
 
@@ -104,7 +103,7 @@ window.s_onBeforeEventSendHook = function (content, ctx) {
 // Expose s_mapIntoXdm for debugging or legacy calls
 window.s_mapIntoXdm = mapIntoXdm;
 
-console.log("[Adobe Analytics Shim] Initialized.");
+_satellite.logger.info("[Adobe Analytics Shim] Initialized.");
 
 // async support fallback
 (function (w) {
@@ -113,7 +112,7 @@ console.log("[Adobe Analytics Shim] Initialized.");
         if (Array.isArray(w.appData)) {
             eventBuffer = w.appData;
         } else {
-            console.error('Elsevier DataLayer "window.appData" must be specified as array');
+            _satellite.logger.error('Elsevier DataLayer "window.appData" must be specified as array');
             return;
         }
     }

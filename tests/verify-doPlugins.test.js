@@ -1,33 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Window } from 'happy-dom';
+import { setupTestWindow, teardownTestWindow } from './helpers/test-setup.js';
 
 describe('doPlugins Integration', () => {
     let win;
 
     beforeEach(async () => {
-        // Create a fresh DOM environment
-        win = new Window();
-        global.window = win;
-        global.document = win.document;
-        global.localStorage = win.localStorage;
+        setupTestWindow();
+        win = window;
 
-        // Mock console
-        global.console = { ...console, error: vi.fn(), log: vi.fn(), warn: vi.fn() };
-
-        // Mock Alloy
-        win.alloy = vi.fn(() => Promise.resolve({}));
-
-        // Mock Satellite
-        win._satellite = {
-            getVar: vi.fn((name) => {
-                if (name === 'Visitor - User ID') return 'test-user-id';
-                if (name === 'Page - Load Timestamp') return Date.now().toString();
-                return '';
-            }),
-            logger: { error: vi.fn() },
-            notify: vi.fn()
-        };
-        global._satellite = win._satellite;
+        // Custom Satellite Mock for this test (override default)
+        // We need to keep the logger but override getVar
+        win._satellite.getVar = vi.fn((name) => {
+            if (name === 'Visitor - User ID') return 'test-user-id';
+            if (name === 'Page - Load Timestamp') return Date.now().toString();
+            return '';
+        });
 
         // Mock pageData
         win.pageData = {
@@ -46,12 +33,7 @@ describe('doPlugins Integration', () => {
     });
 
     afterEach(() => {
-        vi.restoreAllMocks();
-        delete global.window;
-        delete global.document;
-        delete global.localStorage;
-        delete global._satellite;
-        delete global.pageData;
+        teardownTestWindow();
     });
 
     it('should attach doPlugins to window.s', async () => {
