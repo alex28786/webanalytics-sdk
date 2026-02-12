@@ -38,5 +38,6 @@ export function createAlloyMock() {
     });
 
     mock.processedEvents = [];
+    mock.nextEventIndex = 0;
     return mock;
 }

@@ -264,9 +264,9 @@ export const dataElements = {
     },
     "Visitor - Superaccount ID": function () { return path("pageData.visitor.superaccountId"); },
     "Visitor - User ID": function () {
-        val = '';
-        if (pageData && pageData.visitor && pageData.visitor.userId) {
-            val = pageData.visitor.userId;
+        var val = '';
+        if (window.pageData && window.pageData.visitor && window.pageData.visitor.userId) {
+            val = window.pageData.visitor.userId;
             if (val && val.indexOf('@') !== -1) {
                 if (window.pageDataTracker) {
                     val = pageDataTracker.md5(val).substring(0, 16);

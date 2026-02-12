@@ -109,7 +109,7 @@ function addStructuredEventIntoProduct(item, keyOrToken, valMaybe) {
         node.value = Number(valMaybe);
     } else if (ser != null && ser !== "") {
         node.id = String(ser);
-        node.val = 1
+        node.value = 1
     } else {
         node.value = 1;
     }
