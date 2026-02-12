@@ -48,31 +48,5 @@ export function createHitS(ctx, eventName) {
         s.version = "wsdk-" + window.__sShim.version;
     }
 
-    // Media Module Shim
-    s.Media = {
-        open: function (name, length, player) {
-            s.contextData = s.contextData || {};
-            s.contextData['a.media.name'] = name;
-            s.contextData['a.media.length'] = length;
-            s.contextData['a.media.playerName'] = player;
-            if (s.apl) s.events = s.apl(s.events, 'videoStart', ',', 1);
-        },
-        play: function (name, offset) {
-            s.contextData = s.contextData || {};
-            s.contextData['a.media.view'] = true;
-        },
-        stop: function (name, offset) {
-            // placeholder
-        },
-        close: function (name) {
-            s.contextData = s.contextData || {};
-            s.contextData['a.media.complete'] = true;
-            if (s.apl) s.events = s.apl(s.events, 'videoComplete', ',', 1);
-        },
-        track: function (name) {
-            // placeholder
-        }
-    };
-
     return s;
 }

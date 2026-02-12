@@ -411,6 +411,7 @@ export const dataElements = {
     },
     "Page - Currency Code": function () { return path("pageData.page.currencyCode"); },
     "Form - Error Type": function () { return path("eventData.form.errorType"); },
+    "Form - Error Id": function () { return path("eventData.form.errorId"); },
     "Event - Step": function () { return path("eventData.step"); },
     "Search - Advanced Criteria": function () { return path("pageData.search.advancedCriteria"); },
     "Page - Online State": function () { return path("pageData.page.onlineState"); },

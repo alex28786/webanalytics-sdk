@@ -615,7 +615,8 @@ export const rules = {
     },
     formError: {
         track: {
-            "eVar43": "^Form - Error Type^"
+            "eVar43": "^Form - Error Type^",
+            "prop47": "^Form - Error Id^"
         },
         events: ["event26"]
     },
@@ -1399,6 +1400,80 @@ export const rules = {
         run: function (s) {
             s.list2 = resolveDataElement('Page - Widget Names');
             s.linkTrackVars = s.apl(s.linkTrackVars, 'list2', ',', 2);
+        }
+    },
+
+    // ---- Video tracking rules ----
+    videoStart: {
+        events: ['event105'],
+        run: function (s) {
+            var video = window.eventData && window.eventData.video;
+            if (video) {
+                s.eVar77 = video.id;
+                s.prop10 = video.id;
+                s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar77', ',', 1);
+                s.linkTrackVars = s.apl(s.linkTrackVars, 'prop10', ',', 1);
+            }
+        }
+    },
+    videoPlay: {
+        run: function (s) {
+            var video = window.eventData && window.eventData.video;
+            if (video) {
+                s.eVar77 = video.id;
+                s.prop10 = video.id;
+                s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar77', ',', 1);
+                s.linkTrackVars = s.apl(s.linkTrackVars, 'prop10', ',', 1);
+            }
+        }
+    },
+    videoStop: {
+        run: function (s) {
+            var video = window.eventData && window.eventData.video;
+            var media = window.eventData && window.eventData._media;
+            if (video) {
+                s.eVar77 = video.id;
+                s.prop10 = video.id;
+                s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar77', ',', 1);
+                s.linkTrackVars = s.apl(s.linkTrackVars, 'prop10', ',', 1);
+            }
+            if (media && media.timePlayed > 0) {
+                s.events = s.apl(s.events, 'event108=' + media.timePlayed, ',', 1);
+                s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event108', ',', 1);
+            }
+        }
+    },
+    videoComplete: {
+        events: ['event107'],
+        run: function (s) {
+            var video = window.eventData && window.eventData.video;
+            var media = window.eventData && window.eventData._media;
+            if (video) {
+                s.eVar77 = video.id;
+                s.prop10 = video.id;
+                s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar77', ',', 1);
+                s.linkTrackVars = s.apl(s.linkTrackVars, 'prop10', ',', 1);
+            }
+            if (media && media.timePlayed > 0) {
+                s.events = s.apl(s.events, 'event108=' + media.timePlayed, ',', 1);
+                s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event108', ',', 1);
+            }
+        }
+    },
+    videoMilestone: {
+        run: function (s) {
+            var video = window.eventData && window.eventData.video;
+            var media = window.eventData && window.eventData._media;
+            if (video) {
+                s.eVar77 = video.id;
+                s.prop10 = video.id;
+                s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar77', ',', 1);
+                s.linkTrackVars = s.apl(s.linkTrackVars, 'prop10', ',', 1);
+            }
+            if (media && media.milestoneEvent) {
+                s.events = s.apl(s.events, media.milestoneEvent, ',', 1);
+                s.linkTrackEvents = s.apl(s.linkTrackEvents, media.milestoneEvent, ',', 1);
+            }
         }
     }
 

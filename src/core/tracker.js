@@ -1,6 +1,7 @@
 import { md5, stripProductDelimiters, setCookie, getCookie, deleteCookie, getFormattedDate, parseListToKeyValuePairs } from './utils.js';
 import { resolveDataElement } from '../legacy/data-elements.js';
 import { validateData, initWarnings, dtmCodeDesc } from './validation.js';
+import { mediaTracker } from './media.js';
 
 export const pageDataTracker = {
     eventCookieName: 'eventTrack',
@@ -123,6 +124,18 @@ export const pageDataTracker = {
                     _satellite.logger.log("[pageDataTracker] trackEvent - calling alloy");
                 }
                 this.triggerAlloy(event);
+
+                // Fire any pending video milestones as separate beacons
+                var milestones = mediaTracker.getPendingMilestones();
+                for (var mi = 0; mi < milestones.length; mi++) {
+                    var m = milestones[mi];
+                    window.eventData = {
+                        eventName: 'videoMilestone',
+                        video: { id: m.videoId },
+                        _media: { milestoneEvent: m.event, percent: m.percent }
+                    };
+                    this.triggerAlloy('videoMilestone');
+                }
             } else {
                 this.debugMessage('!! Blocked Event: ' + event, data);
             }
@@ -380,30 +393,32 @@ export const pageDataTracker = {
                 }
                 break;
             case 'videoStart':
-                if (data.video && s.Media) {
-                    data.video.length = parseFloat(data.video.length || '0');
-                    data.video.position = parseFloat(data.video.position || '0');
-                    s.Media.open(data.video.id, data.video.length, s.Media.playerName);
-                    s.Media.play(data.video.id, data.video.position);
+                if (data.video) {
+                    var len = parseFloat(data.video.length || '0');
+                    var pos = parseFloat(data.video.position || '0');
+                    mediaTracker.open(data.video.id, len);
+                    mediaTracker.play(data.video.id, pos);
                 }
                 break;
             case 'videoPlay':
-                if (data.video && s.Media) {
-                    data.video.position = parseFloat(data.video.position || '0');
-                    s.Media.play(data.video.id, data.video.position);
+                if (data.video) {
+                    mediaTracker.play(data.video.id, parseFloat(data.video.position || '0'));
                 }
                 break;
             case 'videoStop':
-                if (data.video && s.Media) {
-                    data.video.position = parseFloat(data.video.position || '0');
-                    s.Media.stop(data.video.id, data.video.position);
+                if (data.video) {
+                    var stopPos = parseFloat(data.video.position || '0');
+                    var timePlayed = mediaTracker.stop(data.video.id, stopPos);
+                    // Attach media metadata for the videoStop rule to pick up
+                    window.eventData._media = { timePlayed: timePlayed };
                 }
                 break;
             case 'videoComplete':
-                if (data.video && s.Media) {
-                    data.video.position = parseFloat(data.video.position || '0');
-                    s.Media.stop(data.video.id, data.video.position);
-                    s.Media.close(data.video.id);
+                if (data.video) {
+                    var completePos = parseFloat(data.video.position || '0');
+                    var totalTime = mediaTracker.close(data.video.id, completePos);
+                    // Attach media metadata for the videoComplete rule
+                    window.eventData._media = { timePlayed: totalTime };
                 }
                 break;
             case 'addWebsiteExtension':
