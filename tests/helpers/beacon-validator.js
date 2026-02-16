@@ -9,6 +9,10 @@ import { expectEVar, expectProp, expectXdmPath } from './xdm-validators.js';
  * @param {Array<String>} expected.events Array of event strings (e.g. 'event1', 'event2=10', 'event3:id')
  * @param {Array<Object>} expected.productItems Array of product item expectation objects. 
  *                                            Each object can have 'sku', 'vN', and 'events' array.
+ * @param {Array<String>} expected.commerceEvents Array of AA commerce event tokens 
+ *                                                (e.g. 'scAdd', 'scRemove', 'scCheckout', 'purchase', 'scView', 'scOpen')
+ * @param {String} expected.purchaseID Expected purchaseID in xdm.commerce.order.purchaseID
+ * @param {String} expected.currencyCode Expected currencyCode in xdm.commerce.order.currencyCode
  */
 export function expectDataBeacon(expected) {
     const mock = window.alloy;
@@ -222,5 +226,33 @@ export function expectDataBeacon(expected) {
                 });
             }
         });
+    }
+
+    // 4. Check Commerce Events (AA commerce event tokens like scAdd, scRemove, scCheckout, purchase, scView, scOpen)
+    //    These are validated against the data.__adobe.analytics.events string, not the XDM structured events,
+    //    because commerce events flow through the AA backwards-compatibility path.
+    if (expected.commerceEvents && Array.isArray(expected.commerceEvents)) {
+        const aaEvents = content.data?.__adobe?.analytics?.events || '';
+        expected.commerceEvents.forEach(evt => {
+            if (!aaEvents.split(',').some(token => token.trim() === evt)) {
+                throw new Error(`Commerce event '${evt}' not found in data.__adobe.analytics.events. Got: '${aaEvents}'`);
+            }
+        });
+    }
+
+    // 5. Check purchaseID (xdm.commerce.order.purchaseID)
+    if (expected.purchaseID !== undefined) {
+        const actual = xdm.commerce?.order?.purchaseID;
+        if (actual !== expected.purchaseID) {
+            throw new Error(`purchaseID mismatch. Expected '${expected.purchaseID}', got '${actual}'`);
+        }
+    }
+
+    // 6. Check currencyCode (xdm.commerce.order.currencyCode)
+    if (expected.currencyCode !== undefined) {
+        const actual = xdm.commerce?.order?.currencyCode;
+        if (actual !== expected.currencyCode) {
+            throw new Error(`currencyCode mismatch. Expected '${expected.currencyCode}', got '${actual}'`);
+        }
     }
 }
