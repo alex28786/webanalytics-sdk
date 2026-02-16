@@ -1231,7 +1231,14 @@ export const rules = {
             "prop1": "^Visitor - Account ID^",
             "prop29": "^Visitor - Account Name^"
         },
-        events: ["event266", "event300"]
+        events: ["event266"],
+        run: function (s) {
+            var score = resolveDataElement("Education - Self Reflection Score");
+            if (score) {
+                s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event300', ',', 1);
+                s.events = s.apl(s.events, 'event300=' + score, ',', 1);
+            }
+        }
     },
     settingsUpdate: {
         track: {
@@ -1285,7 +1292,14 @@ export const rules = {
             "eVar56": "D=c43",
             "prop43": "^Event - Survey Meta Data^"
         },
-        events: ["event323", "event322"]
+        events: ["event323"],
+        run: function (s) {
+            var score = resolveDataElement("Event - Survey Score");
+            if (score) {
+                s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event322', ',', 1);
+                s.events = s.apl(s.events, 'event322=' + score, ',', 1);
+            }
+        }
     },
     sync: {
         events: ["event208"],
