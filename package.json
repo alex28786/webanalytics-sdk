@@ -5,7 +5,11 @@
   "main": "src/index.js",
   "scripts": {
     "test": "vitest",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "cja:sync": "node cja-configure/sync.js",
+    "cja:sync:dry": "node cja-configure/sync.js --dry-run",
+    "cja:sync:dev-to-prod": "node cja-configure/sync-dev-to-prod.js",
+    "cja:share": "node cja-configure/share-with-dataviews.js"
   },
   "author": "",
   "license": "ISC",
