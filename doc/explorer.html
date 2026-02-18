@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Analytics SDK — Data Layer Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #23273a;
+      --border: #2e344a;
+      --text: #e2e8f0;
+      --muted: #8892b0;
+      --accent: #7c3aed;
+      --accent2: #a78bfa;
+      --green: #34d399;
+      --blue: #60a5fa;
+      --orange: #fb923c;
+      --pink: #f472b6;
+      --radius: 10px;
+      --font: 'Inter', system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      overflow-y: auto;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .sidebar h1 {
+      font-size: 15px;
+      font-weight: 700;
+      padding: 0 20px 16px;
+      color: var(--accent2);
+      letter-spacing: .5px;
+    }
+
+    .sidebar input {
+      width: calc(100% - 32px);
+      margin: 0 16px 12px;
+      padding: 8px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+
+    .sidebar input:focus {
+      border-color: var(--accent);
+    }
+
+    .nav-section {
+      padding: 6px 0;
+    }
+
+    .nav-section h3 {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 6px 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .nav-item {
+      display: block;
+      padding: 5px 20px 5px 28px;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: none;
+      transition: .15s;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover {
+      color: var(--text);
+      background: var(--surface2);
+    }
+
+    .nav-item.active {
+      color: var(--accent2);
+      border-left-color: var(--accent);
+      background: rgba(124, 58, 237, .08);
+    }
+
+    /* Main */
+    .main {
+      padding: 32px 40px;
+      max-width: 960px;
+    }
+
+    .main h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .main p.desc {
+      color: var(--muted);
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 3px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 6px;
+      color: var(--muted);
+      transition: .15s;
+    }
+
+    .tab:hover {
+      color: var(--text);
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .card-header:hover {
+      background: var(--surface2);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .card-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .badge-commerce {
+      background: rgba(251, 146, 60, .15);
+      color: var(--orange);
+    }
+
+    .badge-content {
+      background: rgba(96, 165, 250, .15);
+      color: var(--blue);
+    }
+
+    .badge-search {
+      background: rgba(52, 211, 153, .15);
+      color: var(--green);
+    }
+
+    .badge-user {
+      background: rgba(244, 114, 182, .15);
+      color: var(--pink);
+    }
+
+    .badge-default {
+      background: rgba(167, 139, 250, .15);
+      color: var(--accent2);
+    }
+
+    .card-body {
+      padding: 0 18px 16px;
+      display: none;
+    }
+
+    .card.open .card-body {
+      display: block;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    td {
+      padding: 7px 10px;
+      border-bottom: 1px solid rgba(46, 52, 74, .5);
+      vertical-align: top;
+    }
+
+    td:first-child {
+      font-weight: 500;
+      color: var(--green);
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    td:nth-child(2) {
+      color: var(--blue);
+      font-size: 12px;
+    }
+
+    td:nth-child(3) {
+      color: var(--orange);
+      font-size: 12px;
+      font-family: monospace;
+    }
+
+    /* Code block */
+    .code-block {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      margin-top: 12px;
+      color: var(--muted);
+    }
+
+    .code-block .key {
+      color: var(--green);
+    }
+
+    .code-block .str {
+      color: var(--orange);
+    }
+
+    .code-block .cmt {
+      color: #4a5568;
+    }
+
+    /* Stats bar */
+    .stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      flex: 1;
+      text-align: center;
+    }
+
+    .stat .num {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+
+    .stat .label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .chevron {
+      transition: .2s;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .card.open .chevron {
+      transform: rotate(90deg);
+    }
+
+    .event-aa {
+      color: var(--orange);
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .no-results {
+      color: var(--muted);
+      text-align: center;
+      padding: 60px 20px;
+      font-size: 14px;
+    }
+
+    /* Schema tag */
+    .schema-tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+      background: rgba(124, 58, 237, .15);
+      color: var(--accent2);
+      cursor: pointer;
+      text-decoration: none;
+      margin-right: 4px;
+      transition: .15s;
+    }
+
+    .schema-tag:hover {
+      background: rgba(124, 58, 237, .3);
+    }
+
+    .content-tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+      background: rgba(96, 165, 250, .15);
+      color: var(--blue);
+      margin-right: 4px;
+    }
+
+    .schema-section {
+      margin-top: 10px;
+    }
+
+    .schema-section-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 6px;
+    }
+
+    .inline-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 6px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h1>📊 Data Layer Explorer</h1>
+      <input type="text" id="search" placeholder="Search events, fields…" autocomplete="off">
+      <nav id="nav"></nav>
+    </aside>
+    <main class="main" id="main"></main>
+  </div>
+  <script src="data-layer-schema.js"></script>
+  <script>
+    const $ = s => document.querySelector(s);
+    const nav = $('#nav');
+    const main = $('#main');
+    const searchInput = $('#search');
+
+    // ── Build navigation ──────────────────────────────────────────────────────
+    const sections = [
+      { id: 'overview', label: '✦ Overview' },
+      { id: 'pageData', label: '📄 pageData' },
+      { id: 'contentItem', label: '📦 Content Items' },
+      { id: 'eventData', label: '🔧 eventData Schemas' },
+      { id: 'events', label: '⚡ Events' },
+      { id: 'examples', label: '💡 Examples' },
+    ];
+
+    sections.forEach(s => {
+      const a = document.createElement('a');
+      a.className = 'nav-item';
+      a.textContent = s.label;
+      a.dataset.section = s.id;
+      a.addEventListener('click', () => showSection(s.id));
+      nav.appendChild(a);
+    });
+
+    // ── Utility ───────────────────────────────────────────────────────────────
+    function badgeClass(cat) {
+      const m = { Commerce: 'commerce', Content: 'content', Search: 'search', User: 'user' };
+      return 'card-badge badge-' + (m[cat] || 'default');
+    }
+
+    function fieldTable(fields, headers = ['Field', 'Type', 'AA Variable', 'Description']) {
+      let html = '<table><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+      for (const [k, v] of Object.entries(fields)) {
+        if (typeof v === 'object' && v.type) {
+          html += `<tr><td>${k}</td><td>${v.type}</td><td>${v.aa || '-'}</td><td>${v.desc || ''}</td></tr>`;
+        } else if (typeof v === 'string') {
+          html += `<tr><td>${k}</td><td>${v}</td><td>-</td><td>-</td></tr>`;
+        }
+      }
+      return html + '</table>';
+    }
+
+    function schemaFieldTable(fields, prefix, filterFields) {
+      let html = '<table><tr><th>Field</th><th>Type</th><th>Description</th></tr>';
+      for (const [k, v] of Object.entries(fields)) {
+        if (filterFields && !filterFields.includes(k)) continue;
+        const type = typeof v === 'object' ? v.type : v;
+        const desc = typeof v === 'object' ? (v.desc || '') : '';
+        html += `<tr><td>${prefix}.${k}</td><td>${type}</td><td>${desc}</td></tr>`;
+      }
+      return html + '</table>';
+    }
+
+    function card(title, body, badge = '', open = false) {
+      return `<div class="card${open ? ' open' : ''}" data-searchable="${title.toLowerCase()}">
+    <div class="card-header" onclick="this.parentElement.classList.toggle('open')">
+      <span class="card-title">${title}</span>
+      <span style="display:flex;gap:8px;align-items:center">
+        ${badge ? `<span class="${badgeClass(badge)}">${badge}</span>` : ''}
+        <span class="chevron">▶</span>
+      </span>
+    </div>
+    <div class="card-body">${body}</div>
+  </div>`;
+    }
+
+    // ── Resolve schema references for an event ────────────────────────────────
+    function resolveEventSchemas(ev) {
+      const schemas = SDK_SCHEMA.eventDataSchemas;
+      let parts = [];
+
+      if (ev.content) {
+        parts.push({ type: 'content' });
+      }
+
+      if (ev.schema) {
+        const schemaNames = Array.isArray(ev.schema) ? ev.schema : [ev.schema];
+        for (const sName of schemaNames) {
+          const schemaDef = schemas[sName];
+          if (!schemaDef) continue;
+          // Determine which fields to show
+          let filterFields = null;
+          if (ev.fields) {
+            if (Array.isArray(ev.fields)) {
+              filterFields = ev.fields;
+            } else if (typeof ev.fields === 'object' && ev.fields[sName]) {
+              filterFields = ev.fields[sName];
+            }
+          }
+          parts.push({ type: 'schema', name: sName, schema: schemaDef, filterFields });
+        }
+      }
+
+      if (ev.data) {
+        parts.push({ type: 'inline', data: ev.data });
+      }
+
+      return parts;
+    }
+
+    // ── Sections ──────────────────────────────────────────────────────────────
+    function showSection(id) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.section === id));
+      const renders = { overview: renderOverview, pageData: renderPageData, contentItem: renderContentItem, events: renderEvents, eventData: renderEventData, examples: renderExamples };
+      (renders[id] || renderOverview)();
+    }
+
+    function renderOverview() {
+      const eventCount = Object.keys(SDK_SCHEMA.events).length;
+      const pdFields = Object.values(SDK_SCHEMA.pageData).reduce((a, v) => a + (typeof v === 'object' && !v.type ? Object.keys(v).length : 1), 0);
+      const ciFields = Object.keys(SDK_SCHEMA.contentItem).length;
+      const schemaCount = Object.keys(SDK_SCHEMA.eventDataSchemas).length;
+      main.innerHTML = `
+    <h2>Web Analytics SDK — Data Layer</h2>
+    <p class="desc">Complete reference for the pageData / eventData layer used by appData.push().</p>
+    <div class="stats">
+      <div class="stat"><div class="num">${pdFields}</div><div class="label">Page Data Fields</div></div>
+      <div class="stat"><div class="num">${ciFields}</div><div class="label">Content Fields</div></div>
+      <div class="stat"><div class="num">${eventCount}</div><div class="label">Events</div></div>
+      <div class="stat"><div class="num">${schemaCount}</div><div class="label">Data Schemas</div></div>
+    </div>
+    <h3 style="margin-bottom:8px">Quick Start</h3>
+    <div class="code-block"><span class="cmt">// 1. Define page data before any tracking</span>
+<span class="key">window</span>.pageData = {
+  <span class="key">page</span>: { <span class="key">productName</span>: <span class="str">'myApp'</span>, <span class="key">sectionName</span>: <span class="str">'home'</span>, <span class="key">type</span>: <span class="str">'landing'</span> },
+  <span class="key">visitor</span>: { <span class="key">accessType</span>: <span class="str">'registered'</span> }
+};
+
+<span class="cmt">// 2. Fire page load</span>
+<span class="key">window</span>.appData.push({ <span class="key">event</span>: <span class="str">'pageLoad'</span> });
+
+<span class="cmt">// 3. Track user actions</span>
+<span class="key">window</span>.appData.push({
+  <span class="key">event</span>: <span class="str">'cartAdd'</span>,
+  <span class="key">content</span>: [{ <span class="key">id</span>: <span class="str">'PROD-123'</span>, <span class="key">price</span>: <span class="str">'29.99'</span>, <span class="key">quantity</span>: <span class="str">'1'</span> }]
+});
+
+<span class="cmt">// 4. Events with schema data</span>
+<span class="key">window</span>.appData.push({
+  <span class="key">event</span>: <span class="str">'formSubmit'</span>,
+  <span class="key">form</span>: { <span class="key">type</span>: <span class="str">'contact'</span> }
+});</div>`;
+    }
+
+    function renderPageData() {
+      const pd = SDK_SCHEMA.pageData;
+      let html = '<h2>pageData Schema</h2><p class="desc">Set window.pageData before firing events. All properties are optional.</p>';
+      for (const [section, fields] of Object.entries(pd)) {
+        if (typeof fields === 'object' && !fields.type && !Array.isArray(fields)) {
+          html += card(`pageData.${section}`, fieldTable(fields), '', false);
+        } else {
+          html += card(`pageData.${section}`, `<p style="color:var(--muted);font-size:13px">${fields.desc || (typeof fields === 'object' ? JSON.stringify(fields) : fields)}</p>`, '', false);
+        }
+      }
+      main.innerHTML = html;
+    }
+
+    function renderContentItem() {
+      main.innerHTML = `<h2>Content Item Schema</h2>
+    <p class="desc">Used in pageData.content[] and eventData.content[] — each object represents a product / document.</p>
+    ${card('contentItem fields', fieldTable(SDK_SCHEMA.contentItem), '', true)}
+    <h3 style="margin:16px 0 8px">Example</h3>
+    <div class="code-block"><span class="key">pageData</span>.content = [{
+  <span class="key">id</span>: <span class="str">'DOI-12345'</span>,
+  <span class="key">type</span>: <span class="str">'journal-article'</span>,
+  <span class="key">accessType</span>: <span class="str">'open-access'</span>,
+  <span class="key">title</span>: <span class="str">'My Research Paper'</span>,
+  <span class="key">format</span>: <span class="str">'pdf'</span>,
+  <span class="key">price</span>: <span class="str">'35.95'</span>,
+  <span class="key">quantity</span>: <span class="str">'1'</span>,
+  <span class="key">onlineDate</span>: 1706745600,
+  <span class="key">publishDate</span>: 1706832000,
+  <span class="key">breadcrumb</span>: <span class="str">'science>biology>genetics'</span>
+}];</div>`;
+    }
+
+    function renderEvents() {
+      const events = SDK_SCHEMA.events;
+      const cats = SDK_SCHEMA.categories;
+
+      // build filter tabs
+      let html = '<h2>Events Reference</h2><p class="desc">All events fired via window.appData.push({ event: "…" }). Events link to reusable data schemas.</p>';
+      html += '<div class="tabs" id="catTabs"><div class="tab active" data-cat="all">All</div>';
+      cats.forEach(c => { html += `<div class="tab" data-cat="${c}">${c}</div>`; });
+      html += '</div><div id="eventCards">';
+
+      for (const [name, ev] of Object.entries(events)) {
+        let body = `<p style="margin-bottom:10px;font-size:13px">${ev.desc}</p>`;
+        body += `<p style="margin-bottom:10px"><span class="event-aa">AA: ${ev.aa}</span></p>`;
+
+        const resolved = resolveEventSchemas(ev);
+        if (resolved.length > 0) {
+          // Tags row
+          body += '<div style="margin-bottom:10px">';
+          for (const part of resolved) {
+            if (part.type === 'content') {
+              body += '<span class="content-tag">content[]</span>';
+            } else if (part.type === 'schema') {
+              body += `<a class="schema-tag" data-schema="${part.name}" href="#">${part.name}</a>`;
+            }
+          }
+          body += '</div>';
+
+          // Field tables
+          for (const part of resolved) {
+            if (part.type === 'schema') {
+              body += `<div class="schema-section">`;
+              body += `<div class="schema-section-label">Schema: ${part.name}${part.filterFields ? ` (${part.filterFields.length} of ${Object.keys(part.schema.fields).length} fields)` : ''}</div>`;
+              body += schemaFieldTable(part.schema.fields, part.name, part.filterFields);
+              body += '</div>';
+            } else if (part.type === 'inline') {
+              body += '<div class="schema-section"><div class="inline-label">Event Data</div>';
+              body += '<table><tr><th>Field</th><th>Type</th></tr>';
+              for (const [k, v] of Object.entries(part.data)) {
+                body += `<tr><td>${k}</td><td>${v}</td></tr>`;
+              }
+              body += '</table></div>';
+            } else if (part.type === 'content') {
+              body += '<div class="schema-section"><div class="schema-section-label">Accepts content[]</div>';
+              body += '<p style="font-size:12px;color:var(--muted)">Pass an array of content items — see Content Items schema for fields.</p></div>';
+            }
+          }
+        }
+
+        html += card(name, body, ev.category);
+      }
+      html += '</div>';
+      main.innerHTML = html;
+
+      // tab filtering
+      document.querySelectorAll('#catTabs .tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('#catTabs .tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          const cat = tab.dataset.cat;
+          document.querySelectorAll('#eventCards .card').forEach(c => {
+            const badge = c.querySelector('.card-badge');
+            const bCat = badge ? badge.textContent : '';
+            c.classList.toggle('hidden', cat !== 'all' && bCat !== cat);
+          });
+        });
+      });
+
+      // schema tag clicks → navigate to eventData section
+      document.querySelectorAll('.schema-tag').forEach(tag => {
+        tag.addEventListener('click', (e) => {
+          e.preventDefault();
+          showSection('eventData');
+          // Auto-open the matching schema card
+          setTimeout(() => {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(c => {
+              if (c.querySelector('.card-title')?.textContent === `eventData.${tag.dataset.schema}`) {
+                c.classList.add('open');
+                c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            });
+          }, 50);
+        });
+      });
+    }
+
+    function renderEventData() {
+      const schemas = SDK_SCHEMA.eventDataSchemas;
+      let html = '<h2>eventData Schemas</h2><p class="desc">Reusable data shapes passed alongside events. Each schema maps to a top-level key in the appData.push() payload.</p>';
+
+      for (const [name, schema] of Object.entries(schemas)) {
+        // Find which events use this schema
+        const usedBy = Object.entries(SDK_SCHEMA.events)
+          .filter(([_, ev]) => {
+            if (!ev.schema) return false;
+            const names = Array.isArray(ev.schema) ? ev.schema : [ev.schema];
+            return names.includes(name);
+          })
+          .map(([evName]) => evName);
+
+        let body = `<p style="margin-bottom:10px;font-size:13px">${schema.desc}</p>`;
+
+        if (usedBy.length > 0) {
+          body += '<div style="margin-bottom:10px"><span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Used by: </span>';
+          body += usedBy.map(ev => `<span style="font-size:12px;color:var(--accent2);font-family:monospace">${ev}</span>`).join(', ');
+          body += '</div>';
+        }
+
+        body += schemaFieldTable(schema.fields, name, null);
+        html += card(`eventData.${name}`, body, '', false);
+      }
+      main.innerHTML = html;
+    }
+
+    function renderExamples() {
+      main.innerHTML = `<h2>Usage Examples</h2><p class="desc">Copy-paste snippets for common tracking scenarios.</p>
+${card('Page Load', `<div class="code-block"><span class="key">window</span>.pageData = {
+  <span class="key">page</span>: {
+    <span class="key">productName</span>: <span class="str">'sciencedirect'</span>,
+    <span class="key">sectionName</span>: <span class="str">'search'</span>,
+    <span class="key">type</span>: <span class="str">'search-results'</span>,
+    <span class="key">language</span>: <span class="str">'en'</span>
+  },
+  <span class="key">visitor</span>: { <span class="key">accessType</span>: <span class="str">'institutional'</span>, <span class="key">accountId</span>: <span class="str">'INST-42'</span> },
+  <span class="key">search</span>: { <span class="key">criteria</span>: <span class="str">'machine learning'</span>, <span class="key">totalResults</span>: <span class="str">'1542'</span> }
+};
+<span class="key">appData</span>.push({ <span class="key">event</span>: <span class="str">'pageLoad'</span> });</div>`, '', true)}
+${card('Add to Cart', `<div class="code-block"><span class="key">appData</span>.push({
+  <span class="key">event</span>: <span class="str">'cartAdd'</span>,
+  <span class="key">content</span>: [{
+    <span class="key">id</span>: <span class="str">'978-0-12-345678-9'</span>,
+    <span class="key">type</span>: <span class="str">'book'</span>,
+    <span class="key">title</span>: <span class="str">'Advanced ML Textbook'</span>,
+    <span class="key">price</span>: <span class="str">'89.99'</span>,
+    <span class="key">quantity</span>: <span class="str">'1'</span>
+  }]
+});</div>`)}
+${card('Form Submission', `<div class="code-block"><span class="cmt">// Schema reference: form → { type }</span>
+<span class="key">appData</span>.push({
+  <span class="key">event</span>: <span class="str">'formSubmit'</span>,
+  <span class="key">form</span>: { <span class="key">type</span>: <span class="str">'contact-us'</span> }
+});</div>`)}
+${card('Purchase Complete', `<div class="code-block"><span class="cmt">// Set purchase step first</span>
+<span class="key">pageData</span>.page.purchaseStep = <span class="str">'purchase'</span>;
+<span class="key">pageData</span>.page.currencyCode = <span class="str">'USD'</span>;
+<span class="key">pageData</span>.order = { <span class="key">id</span>: <span class="str">'ORD-98765'</span>, <span class="key">paymentMethod</span>: <span class="str">'credit-card'</span> };
+<span class="key">pageData</span>.content = [{
+  <span class="key">id</span>: <span class="str">'978-0-12-345678-9'</span>,
+  <span class="key">price</span>: <span class="str">'89.99'</span>,
+  <span class="key">quantity</span>: <span class="str">'1'</span>
+}];
+<span class="key">appData</span>.push({ <span class="key">event</span>: <span class="str">'purchaseComplete'</span> });</div>`)}
+${card('Video Tracking', `<div class="code-block"><span class="cmt">// Schema reference: video → { id }</span>
+<span class="key">appData</span>.push({
+  <span class="key">event</span>: <span class="str">'videoStart'</span>,
+  <span class="key">video</span>: { <span class="key">id</span>: <span class="str">'VID-001'</span>, <span class="key">duration</span>: 320 }
+});
+
+<span class="cmt">// Milestones fire automatically via heartbeat</span>
+<span class="cmt">// Manual stop (schemas: video + _media):</span>
+<span class="key">appData</span>.push({
+  <span class="key">event</span>: <span class="str">'videoStop'</span>,
+  <span class="key">video</span>: { <span class="key">id</span>: <span class="str">'VID-001'</span> },
+  <span class="key">_media</span>: { <span class="key">timePlayed</span>: 145 }
+});</div>`)}
+${card('Education — Assignment', `<div class="code-block"><span class="cmt">// Schema reference: education → { all fields }</span>
+<span class="key">appData</span>.push({
+  <span class="key">event</span>: <span class="str">'assignmentCompleted'</span>,
+  <span class="key">education</span>: {
+    <span class="key">programId</span>: <span class="str">'PROG-1'</span>,    <span class="key">programName</span>: <span class="str">'Nursing BSN'</span>,
+    <span class="key">courseId</span>: <span class="str">'CRS-101'</span>,     <span class="key">courseName</span>: <span class="str">'Anatomy'</span>,
+    <span class="key">assignmentId</span>: <span class="str">'ASN-42'</span>,  <span class="key">assignmentName</span>: <span class="str">'Quiz 3'</span>,
+    <span class="key">assignmentType</span>: <span class="str">'quiz'</span>,
+    <span class="key">assignmentDuration</span>: 1800,
+    <span class="key">assignmentScore</span>: <span class="str">'85'</span>
+  }
+});</div>`)}
+${card('Search with AutoSuggest', `<div class="code-block"><span class="cmt">// Schema reference: search → subset of fields</span>
+<span class="key">appData</span>.push({
+  <span class="key">event</span>: <span class="str">'autoSuggestTermClicked'</span>,
+  <span class="key">search</span>: {
+    <span class="key">typedTerm</span>: <span class="str">'mach'</span>,
+    <span class="key">selectedTerm</span>: <span class="str">'machine learning'</span>,
+    <span class="key">suggestedLetterCount</span>: <span class="str">'4'</span>,
+    <span class="key">suggestedResultCount</span>: <span class="str">'5'</span>,
+    <span class="key">suggestedClickPosition</span>: <span class="str">'1'</span>
+  }
+});</div>`)}`;
+    }
+
+    // ── Search ────────────────────────────────────────────────────────────────
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.toLowerCase().trim();
+      document.querySelectorAll('.card').forEach(c => {
+        if (!q) { c.classList.remove('hidden'); return; }
+        const text = c.textContent.toLowerCase();
+        c.classList.toggle('hidden', !text.includes(q));
+        if (text.includes(q)) c.classList.add('open');
+      });
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    showSection('overview');
+  </script>
+</body>
+
+</html>
