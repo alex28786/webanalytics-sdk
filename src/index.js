@@ -8,7 +8,7 @@ import { initDoPlugins } from './legacy/doPlugins.js';
 
 // Create Satellite Shim Namespace
 if (!window.__sShim) {
-    window.__sShim = { version: "2.3" };
+    window.__sShim = { version: "2.4" };
 }
 
 // Initialization IIFE (ECID)

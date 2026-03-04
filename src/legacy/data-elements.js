@@ -1,4 +1,6 @@
-import { pageDataTracker } from '../core/tracker.js';
+import { md5, stripProductDelimiters } from '../core/utils.js';
+
+const getTracker = () => window.pageDataTracker || {};
 
 function path(str) {
     if (!str) return '';
@@ -186,7 +188,7 @@ export const dataElements = {
     },
     "Event - Button Type": function () { return path("eventData.buttonType"); },
     "Search - Facet List": function () {
-        return pageDataTracker.getSearchFacets()
+        return getTracker().getSearchFacets ? getTracker().getSearchFacets() : '';
     },
     "Search - Channel": function () { return path("pageData.search.channel"); },
     "Event - NPS Comment": function () { return path("eventData.nps.comment"); },
@@ -213,13 +215,16 @@ export const dataElements = {
         return t.join("^")
     },
     "Visitor - Consortium + Account": function () {
-        return pageDataTracker.getConsortiumAccountId()
+        return getTracker().getConsortiumAccountId ? getTracker().getConsortiumAccountId() : '';
     },
     "Campaign - ID": function () {
-        var e = function (e, t = window.location.href) {
-            e = e.replace(/[\[\]]/g, "\\$&");
-            var n = new RegExp("[?&]" + e + "(=([^&#]*)|&|#|$)").exec(t);
-            return n ? n[2] ? decodeURIComponent(n[2].replace(/\+/g, " ")) : "" : null
+        var e = function (name, url = window.location.href) {
+            try {
+                var searchParams = new URL(url).searchParams;
+                return searchParams.has(name) ? searchParams.get(name) : null;
+            } catch (err) {
+                return null;
+            }
         },
             t = e("dgcid");
         if (!t)
@@ -260,7 +265,7 @@ export const dataElements = {
     "Search - Results per Page": function () { return path("pageData.search.resultsPerPage"); },
     "Order - Promo Code": function () { return path("pageData.order.promoCode"); },
     "Page - Journal Info": function () {
-        return pageDataTracker.getJournalInfo()
+        return getTracker().getJournalInfo ? getTracker().getJournalInfo() : '';
     },
     "Visitor - Superaccount ID": function () { return path("pageData.visitor.superaccountId"); },
     "Visitor - User ID": function () {
@@ -268,8 +273,8 @@ export const dataElements = {
         if (window.pageData && window.pageData.visitor && window.pageData.visitor.userId) {
             val = window.pageData.visitor.userId;
             if (val && val.indexOf('@') !== -1) {
-                if (window.pageDataTracker) {
-                    val = pageDataTracker.md5(val).substring(0, 16);
+                if (typeof md5 === 'function') {
+                    val = md5(val).substring(0, 16);
                 } else {
                     val = ''
                 }
@@ -421,7 +426,7 @@ export const dataElements = {
     "Education - Test Question": function () { return path("eventData.education.testQuestion"); },
     "Education - Content ID": function () {
         var e = "none^none^none^none^none^none^none^" + eventData.education.contentId;
-        return pageDataTracker.stripProductDelimiters(e).toLowerCase()
+        return typeof stripProductDelimiters === 'function' ? stripProductDelimiters(e).toLowerCase() : e.toLowerCase();
     },
     "Event - Feature Name": function () { return path("eventData.feature.name"); },
     "Page - Tabs": function () {
@@ -439,7 +444,7 @@ export const dataElements = {
     "Maturity Level": function () { return "1"; },
     "serverState": function () { return path("serverState"); },
     "Search - Result Types": function () {
-        return pageDataTracker.getSearchResultsByType()
+        return getTracker().getSearchResultsByType ? getTracker().getSearchResultsByType() : '';
     },
     "Event - Rows Exported": function () { return path("eventData.export.rows"); },
     "Search - Feature Used": function () { return path("eventData.search.featureName"); },

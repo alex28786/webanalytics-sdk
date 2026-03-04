@@ -67,6 +67,7 @@ function eventBucketName(evNum) {
 }
 
 function addStructuredEvent(targetXdm, evToken) {
+    // eslint-disable-next-line security/detect-unsafe-regex
     const m = /^event(\d+)(?::([^=]+))?(?:=(.+))?$/i.exec(evToken);
     if (!m) return;
     const num = parseInt(m[1], 10);
@@ -92,6 +93,7 @@ function addStructuredEvent(targetXdm, evToken) {
 }
 
 function addStructuredEventIntoProduct(item, keyOrToken, valMaybe) {
+    // eslint-disable-next-line security/detect-unsafe-regex
     const m = /^event(\d+)(?::([^=]+))?$/i.exec(String(keyOrToken));
     if (!m) return;
     const num = parseInt(m[1], 10);
@@ -411,6 +413,7 @@ export function mapIntoXdm(s, xdm, context) {
                     //   1) key "event342" with val "11"        -> value=11
                     //   2) key "event364:SERIAL" with val true -> id="SERIAL"
                     //   3) key "event51" with val true         -> counter value=1
+                    // eslint-disable-next-line security/detect-unsafe-regex
                     const mEvt = /^event(\d+)(?::([^=]+))?$/i.exec(key);
                     if (mEvt) {
                         const evNum = parseInt(mEvt[1], 10);
