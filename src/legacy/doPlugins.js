@@ -623,7 +623,7 @@ export function initDoPlugins(s) {
         }
 
         // link-out
-        if (s.eVar37 && s.products && s.isTracked('eVar37')) {
+        if (s.eVar37 && s.products && s.isTracked(s, 'eVar37')) {
             s.events = s.apl(s.events, 'event44', ',', 2);
             s.linkTrackVars = s.apl(s.linkTrackVars, 'events', ',', 2);
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event44', ',', 2);
@@ -658,7 +658,7 @@ export function initDoPlugins(s) {
         }
 
         // failed registrations
-        if ((formName.indexOf('register') > -1 || formName.indexOf('registration') > -1) && s.isTracked('eVar43')) {
+        if ((formName.indexOf('register') > -1 || formName.indexOf('registration') > -1) && s.isTracked(s, 'eVar43')) {
             s.events = s.apl(s.events, 'event216', ',', 2);
             s.linkTrackEvents = s.apl(s.linkTrackEvents, 'event216', ',', 2);
         }
@@ -725,14 +725,14 @@ export function initDoPlugins(s) {
         }
 
         // generally save conversion driver
-        if (!s.isTracked('eVar103') && window.eventData && eventData.conversionDriver && eventData.conversionDriver.name) {
+        if (!s.isTracked(s, 'eVar103') && window.eventData && eventData.conversionDriver && eventData.conversionDriver.name) {
             s.eVar103 = eventData.conversionDriver.name;
             s.eVar110 = 'D=pageName';
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar103,eVar110', ',', 2);
         }
 
         // copy conversion driver over with linear allocation
-        if (s.eVar103 && s.isTracked('eVar103')) {
+        if (s.eVar103 && s.isTracked(s, 'eVar103')) {
             s.eVar145 = 'D=v103';
             s.linkTrackVars = s.apl(s.linkTrackVars, 'eVar145', ',', 2);
         }
@@ -856,10 +856,10 @@ export function initDoPlugins(s) {
         s.linkTrackVars = s.apl(s.linkTrackVars, 'products', ',', 2);
         s.linkTrackVars = s.apl(s.linkTrackVars, 'currencyCode', ',', 2);
         s.linkTrackVars = s.apl(s.linkTrackVars, 'channel', ',', 2);
-        if (s.isTracked('list3')) {
+        if (s.isTracked(s, 'list3')) {
             s.linkTrackVars = s.apl(s.linkTrackVars, 'prop36', ',', 2);
         }
-        if (s.isTracked('eVar33')) {
+        if (s.isTracked(s, 'eVar33')) {
             s.linkTrackVars = s.apl(s.linkTrackVars, 'prop37', ',', 2);
         }
 
@@ -870,7 +870,7 @@ export function initDoPlugins(s) {
         s.linkTrackVars = s.apl(s.linkTrackVars, 'prop39', ',', 2);
         if (s.prop39 && s.prop39 == 'id') {
             s.prop42 = s.eVar33 ? 'D=v33' : '';
-            if (s.isTracked('eVar33')) {
+            if (s.isTracked(s, 'eVar33')) {
                 s.linkTrackVars = s.apl(s.linkTrackVars, 'prop42', ',', 2);
             }
         }

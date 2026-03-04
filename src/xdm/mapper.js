@@ -455,9 +455,9 @@ export function mapIntoXdm(s, xdm, context) {
         setIfEmpty(xdm.web.webInteraction, "URL", s.linkURL);
         // Use eventName for link click name per request; fallback to s.linkName
         xdm.web.webInteraction.name = eventName || xdm.web.webInteraction.name || s.linkName || "";
-        // Type: "other" for custom, else mapped from AA
+        // Type: "other" for custom, else mapped from AA, but keep existing if mapped is "other"
         const mappedType = mapLinkType(s.linkType);
-        xdm.web.webInteraction.type = mappedType === "other" ? "other" : mappedType;
+        xdm.web.webInteraction.type = mappedType !== "other" ? mappedType : (xdm.web.webInteraction.type || "other");
 
         // increment linkClicks counter
         xdm.web.webInteraction.linkClicks = xdm.web.webInteraction.linkClicks || {};

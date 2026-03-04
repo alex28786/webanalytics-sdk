@@ -12,7 +12,7 @@ export function attachPlugins(s) {
     s.Util = {};
     s.Util.getQueryParam = function getQueryParam(a, d, f) { function n(g, c) { c = c.split("?").join("&"); c = c.split("#").join("&"); var e = c.indexOf("&"); if (g && (-1 < e || c.indexOf("=") > e)) { e = c.substring(e + 1); e = e.split("&"); for (var h = 0, p = e.length; h < p; h++) { var l = e[h].split("="), q = l[1]; if (l[0].toLowerCase() === g.toLowerCase()) return decodeURIComponent(q || !0) } } return "" } if ("-v" === a) return { plugin: "getQueryParam", version: "4.0.1" }; var b = function () { if ("undefined" !== typeof window.s_c_il) for (var g = 0, c; g < window.s_c_il.length; g++)if (c = window.s_c_il[g], c._c && "s_c" === c._c) return c }(); "undefined" !== typeof b && (b.contextData.getQueryParam = "4.0"); if (a) { d = d || ""; f = (f || "undefined" !== typeof b && b.pageURL || location.href) + ""; (4 < d.length || -1 < d.indexOf("=")) && f && 4 > f.length && (b = d, d = f, f = b); b = ""; for (var m = a.split(","), r = m.length, k = 0; k < r; k++)a = n(m[k], f), "string" === typeof a ? (a = -1 < a.indexOf("#") ? a.substring(0, a.indexOf("#")) : a, b += b ? d + a : a) : b = "" === b ? a : b + (d + a); return b } };
 
-    s.isTracked = function (v) {
+    s.isTracked = function (s, v) {
         return s.split(s.linkTrackVars, ',').indexOf(v) !== -1;
     };
     s.getValue = function (path) {
@@ -323,14 +323,92 @@ export function attachPlugins(s) {
     s.p_fo = new Function("n", "" + "var s=this;if(!s.__fo){s.__fo=new Object;}if(!s.__fo[n]){s.__fo[n]=" + "new Object;return 1;}else {return 0;}");
     s.clickPast = new Function("scp", "ct_ev", "cp_ev", "cpc", "" + "var s=this,scp,ct_ev,cp_ev,cpc,ev,tct;if(s.p_fo(ct_ev)==1){if(!cpc)" + "{cpc='s_cpc';}ev=s.events?s.events+',':'';if(scp){s.events=ev+ct_ev" + ";s.c_w(cpc,1,0);}else{if(s.c_r(cpc)>=1){s.events=ev+cp_ev;s.c_w(cpc" + ",0,0);}}}");
 
+    // 1. Lazy Apex Domain Scanner Cache
+    let cachedApexDomain = null;
 
+    const getApexDomain = () => {
+        if (cachedApexDomain) return cachedApexDomain;
+
+        const hostname = window.location.hostname;
+        const parts = hostname.split('.');
+
+        // Return early for localhost or bare IPs
+        if (parts.length === 1) {
+            cachedApexDomain = hostname;
+            return cachedApexDomain;
+        }
+
+        let domain = parts[parts.length - 1];
+
+        // Start at length - 2 to skip testing 1-part TLDs (like 'uk' or 'com')
+        for (let i = parts.length - 2; i >= 0; i--) {
+            domain = parts[i] + '.' + domain;
+            const testCookie = "aa-cookie-test=" + domain;
+
+            try {
+                // Removed Secure/SameSite for the ping test
+                document.cookie = testCookie + "; domain=" + domain + "; path=/";
+
+                if (document.cookie.indexOf(testCookie) !== -1) {
+                    // Cleanup
+                    document.cookie = testCookie + "; domain=" + domain + "; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+                    cachedApexDomain = "." + domain;
+                    return cachedApexDomain;
+                }
+            } catch (e) {
+                continue;
+            }
+        }
+
+        // Absolute fallback
+        cachedApexDomain = hostname;
+        return cachedApexDomain;
+    };
+
+    // 2. Base Read Wrapper
     s.c_r = function (name) {
-        const m = document.cookie.match("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)");
+        // Primary: _satellite interface
+        if (window._satellite && window._satellite.cookie && window._satellite.cookie.get) {
+            return window._satellite.cookie.get(name) || "";
+        }
+
+        // Fallback: Hardened native read
+        const escapedName = name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1');
+        const m = document.cookie.match("(^|;)\\s*" + escapedName + "\\s*=\\s*([^;]+)");
         return m ? decodeURIComponent(m.pop()) : "";
     };
+
+    // 3. Base Write Wrapper
     s.c_w = function (name, value, days) {
+        // Consent Gate (Fires before domain scan to prevent CMP flags)
+        const ca = typeof resolveDataElement === 'function' ? resolveDataElement('Consent Adobe') : null;
+        if (ca && ca.aa === false) return false;
+
+        // Enforce strict 395-day maximum expiration policy
+        if (days) {
+            days = Math.min(days, 395);
+        }
+
+        const apexDomain = getApexDomain();
+        const isSecure = window.location.protocol === 'https:';
+
+        // Primary: _satellite interface
+        if (window._satellite && window._satellite.cookie && window._satellite.cookie.set) {
+            const attributes = {
+                path: "/",
+                domain: apexDomain,
+                secure: isSecure,
+                sameSite: 'Lax'
+            };
+            if (days) attributes.expires = days;
+
+            window._satellite.cookie.set(name, value, attributes);
+            return value;
+        }
+
+        // Fallback: Native
         const exp = days ? "; expires=" + new Date(Date.now() + days * 864e5).toUTCString() : "";
-        document.cookie = name + "=" + encodeURIComponent(value) + exp + "; path=/";
+        document.cookie = name + "=" + encodeURIComponent(value) + exp + "; domain=" + apexDomain + "; path=/; " + (isSecure ? "Secure; " : "") + "SameSite=Lax";
         return value;
     };
 

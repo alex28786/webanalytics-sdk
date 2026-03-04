@@ -13,6 +13,7 @@ import { expectEVar, expectProp, expectXdmPath } from './xdm-validators.js';
  *                                                (e.g. 'scAdd', 'scRemove', 'scCheckout', 'purchase', 'scView', 'scOpen')
  * @param {String} expected.purchaseID Expected purchaseID in xdm.commerce.order.purchaseID
  * @param {String} expected.currencyCode Expected currencyCode in xdm.commerce.order.currencyCode
+ * @param {Boolean} expected.debug If true, prints the full beacon content to the console
  */
 export function expectDataBeacon(expected) {
     const mock = window.alloy;
@@ -25,16 +26,31 @@ export function expectDataBeacon(expected) {
         mock.nextEventIndex = 0;
     }
 
-    if (mock.nextEventIndex >= mock.processedEvents.length) {
-        throw new Error(`Expected beacon #${mock.nextEventIndex + 1} but only ${mock.processedEvents.length} events were sent.`);
+    let targetIndex = mock.nextEventIndex;
+    if (expected.callIndex !== undefined) {
+        // If they ask for the LAST call, let them pass -1
+        if (expected.callIndex === -1) {
+            targetIndex = mock.processedEvents.length - 1;
+        } else {
+            targetIndex = expected.callIndex;
+        }
+    } else {
+        mock.nextEventIndex++;
     }
 
-    const content = mock.processedEvents[mock.nextEventIndex];
-    mock.nextEventIndex++;
+    if (targetIndex >= mock.processedEvents.length || targetIndex < 0) {
+        throw new Error(`Expected beacon at index ${targetIndex} but only ${mock.processedEvents.length} events were sent.`);
+    }
+
+    const content = mock.processedEvents[targetIndex];
 
     const xdm = content.xdm;
     if (!xdm) {
         throw new Error("No XDM object found in event content");
+    }
+
+    if (expected.debug) {
+        console.log(`[DEBUG] Beacon Payload (Index: ${targetIndex}):\n`, JSON.stringify(content, null, 2));
     }
 
     // 1. Check eVars (vN) and Props (pN)
