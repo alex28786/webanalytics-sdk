@@ -154,6 +154,19 @@ export const pageDataTracker = {
         xdm._experience.analytics = xdm._experience.analytics || {};
         xdm._experience.analytics.eventName = eventName;
 
+        const PAGE_VIEW_EVENTS = ["newPage", "searchResultsUpdated"];
+        if (PAGE_VIEW_EVENTS.indexOf(eventName) > -1) {
+            xdm.web = xdm.web || {};
+            xdm.web.webPageDetails = xdm.web.webPageDetails || {};
+            xdm.web.webPageDetails.pageViews = xdm.web.webPageDetails.pageViews || {};
+            xdm.web.webPageDetails.pageViews.value = 1;
+
+            var pageName = resolveDataElement('Page - Analytics Pagename') || resolveDataElement('Page - Name');
+            if (pageName) {
+                xdm.web.webPageDetails.name = pageName;
+            }
+        }
+
         // let the Web SDK callback run doPlugins + s->XDM merge
         // We use window.alloy directly
         window.alloy && window.alloy("sendEvent", { xdm });

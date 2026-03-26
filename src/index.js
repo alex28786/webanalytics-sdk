@@ -5,10 +5,11 @@ import { mapIntoXdm } from './xdm/mapper.js';
 import { applyRuleToS, rules } from './legacy/rules.js';
 import { attachPlugins } from './legacy/plugins.js';
 import { initDoPlugins } from './legacy/doPlugins.js';
+import { ORG_ID } from './core/utils.js';
 
 // Create Satellite Shim Namespace
 if (!window.__sShim) {
-    window.__sShim = { version: "2.4" };
+    window.__sShim = { version: "2.5" };
 }
 
 // Initialization IIFE (ECID)
@@ -40,7 +41,6 @@ window.s.visitor = window.s.visitor || {};
 window.s.visitor.appendVisitorIDsTo = function (url) {
     // 1. CONFIGURATION
     // Enter the plain ID. The code handles the necessary double-encoding.
-    var ORG_ID = "4D6368F454EC41940A4C98A6@AdobeOrg";
 
     // Safety checks
     if (!url) return "";
@@ -145,16 +145,74 @@ window.s_onBeforeEventSendHook = function (content, ctx) {
 
     // 6) Integrated Merge
     // Call mapper and capture both XDM and Data branches
-    var mapped = mapIntoXdm(s, content.xdm, { eventName: eventName, hitType: s.linkType ? "link" : "page" });
+    var mapped = mapIntoXdm(s, content.xdm, {
+        eventName: eventName,
+        hitType: s.linkType ? "link" : "page",
+        originalData: content.data // Pass original data including activitymap
+    });
     // Re-assign the enriched XDM (which now includes your identityMap + mapper output)
     content.xdm = mapped.xdm;
 
-    // Assign the Data object for direct AA mapping
+    // Assign the Data object for direct AA mapping (preserves contextData)
     content.data = mapped.data;
 };
 
 // Expose s_mapIntoXdm for debugging or legacy calls
 window.s_mapIntoXdm = mapIntoXdm;
+
+// Define Filter Click Hook (Activity Map implementation)
+window.s_filterClickDetailsHook = function (content) {
+    if (!content || !content.clickedElement) return;
+
+    var el = content.clickedElement;
+
+    // Region logic (no stopout)
+    var regionId = null;
+    var regionEl = el;
+    while (regionEl) {
+        if (regionEl.getAttribute) {
+            regionId = regionEl.getAttribute('data-aa-region');
+            if (regionId) {
+                content.linkRegion = regionId.toLowerCase();
+                break;
+            }
+        }
+        regionEl = regionEl.parentNode;
+    }
+
+    // Default region logic - apply MD5 hashing if it contains '@'
+    if (!regionId && content.linkRegion && content.linkRegion.indexOf('@') !== -1) {
+        if (window.pageDataTracker && window.pageDataTracker.md5) {
+            content.linkRegion = 'DTM filtered (@):' + window.pageDataTracker.md5(content.linkRegion).substring(0, 16);
+        }
+    }
+
+    // Link logic (stopout on A or BUTTON)
+    var linkId = null;
+    var linkEl = el;
+    while (linkEl) {
+        if (linkEl.getAttribute) {
+            linkId = linkEl.getAttribute('data-aa-name');
+            if (linkId) {
+                content.linkName = linkId.toLowerCase();
+                break;
+            }
+        }
+        if (linkEl.tagName === 'A' || linkEl.tagName === 'BUTTON') {
+            break;
+        }
+        linkEl = linkEl.parentNode;
+    }
+
+    // Default link logic - apply MD5 hashing if it contains '@'
+    if (!linkId && content.linkName && content.linkName.indexOf('@') !== -1) {
+        if (window.pageDataTracker && window.pageDataTracker.md5) {
+            content.linkName = 'DTM filtered (@):' + window.pageDataTracker.md5(content.linkName).substring(0, 16);
+        }
+    }
+
+    return true;
+};
 
 _satellite.logger.info("[Adobe Analytics Shim] Initialized.");
 

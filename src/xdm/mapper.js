@@ -1,3 +1,4 @@
+import { ORG_ID } from '../core/utils.js';
 
 // Constants
 const EVAR_MAX = 200, PROP_MAX = 75;
@@ -67,7 +68,6 @@ function eventBucketName(evNum) {
 }
 
 function addStructuredEvent(targetXdm, evToken) {
-    // eslint-disable-next-line security/detect-unsafe-regex
     const m = /^event(\d+)(?::([^=]+))?(?:=(.+))?$/i.exec(evToken);
     if (!m) return;
     const num = parseInt(m[1], 10);
@@ -93,7 +93,6 @@ function addStructuredEvent(targetXdm, evToken) {
 }
 
 function addStructuredEventIntoProduct(item, keyOrToken, valMaybe) {
-    // eslint-disable-next-line security/detect-unsafe-regex
     const m = /^event(\d+)(?::([^=]+))?$/i.exec(String(keyOrToken));
     if (!m) return;
     const num = parseInt(m[1], 10);
@@ -413,7 +412,6 @@ export function mapIntoXdm(s, xdm, context) {
                     //   1) key "event342" with val "11"        -> value=11
                     //   2) key "event364:SERIAL" with val true -> id="SERIAL"
                     //   3) key "event51" with val true         -> counter value=1
-                    // eslint-disable-next-line security/detect-unsafe-regex
                     const mEvt = /^event(\d+)(?::([^=]+))?$/i.exec(key);
                     if (mEvt) {
                         const evNum = parseInt(mEvt[1], 10);
@@ -456,15 +454,16 @@ export function mapIntoXdm(s, xdm, context) {
         xdm.web.webInteraction = xdm.web.webInteraction || {};
         // Populate link details
         setIfEmpty(xdm.web.webInteraction, "URL", s.linkURL);
-        // Use eventName for link click name per request; fallback to s.linkName
-        xdm.web.webInteraction.name = eventName || xdm.web.webInteraction.name || s.linkName || "";
+        // DO NOT overwrite auto-tracked Web SDK name if already present (e.g. Scopus.com). 
+        // DO NOT force "manual_link_hit" or eventName over organic Web SDK values.
+        xdm.web.webInteraction.name = xdm.web.webInteraction.name || eventName || s.linkName || "custom_link";
         // Type: "other" for custom, else mapped from AA, but keep existing if mapped is "other"
         const mappedType = mapLinkType(s.linkType);
         xdm.web.webInteraction.type = mappedType !== "other" ? mappedType : (xdm.web.webInteraction.type || "other");
 
-        // increment linkClicks counter
+        // increment linkClicks counter unconditionally to flush pending activity map clicks
         xdm.web.webInteraction.linkClicks = xdm.web.webInteraction.linkClicks || {};
-        setIfEmpty(xdm.web.webInteraction.linkClicks, "value", 1);
+        xdm.web.webInteraction.linkClicks.value = 1;
     } else {
         // page view counter
         xdm.web.webPageDetails.pageViews = xdm.web.webPageDetails.pageViews || {};
@@ -472,15 +471,46 @@ export function mapIntoXdm(s, xdm, context) {
     }
 
     // 9) DATA OBJECT FOR LEGACY ANALYTICS OVERRIDE
-    var data = {
-        "__adobe": {
-            "analytics": {}
-        }
-    };
+    var data = context.originalData || {}; // Assume original data object might be passed via context, if not, we use empty.
+
+    // Safety check for Web SDK input structure mapping
+    data.__adobe = data.__adobe || {};
+    data.__adobe.analytics = data.__adobe.analytics || {};
 
     // Map the raw products string directly if it exists and is allowed
     if (allowVar("products") && s.products) {
         data.__adobe.analytics.products = s.products;
+    }
+
+    // 10) Fetch and flush pending Activity Map data from Session Storage for custom link events
+    if (resolvedHitType === "link") {
+        try {
+            if (typeof sessionStorage !== "undefined") {
+                // Fetch the specific alloy click collection key for our ORG_ID
+                var amKey = "com.adobe.alloy." + ORG_ID + "clickData";
+                var pendingStr = sessionStorage.getItem(amKey);
+
+                if (pendingStr) {
+                    var clickData = JSON.parse(pendingStr);
+
+                    // Map into contextData.a.activitymap expected by Adobe Analytics
+                    data.__adobe.analytics.contextData = data.__adobe.analytics.contextData || {};
+                    data.__adobe.analytics.contextData.a = data.__adobe.analytics.contextData.a || {};
+                    data.__adobe.analytics.contextData.a.activitymap = data.__adobe.analytics.contextData.a.activitymap || {};
+
+                    var am = data.__adobe.analytics.contextData.a.activitymap;
+                    am.page = am.page || clickData.pageName;
+                    am.link = am.link || clickData.linkName;
+                    am.region = am.region || clickData.linkRegion;
+                    am.pageIDType = am.pageIDType || clickData.pageIDType;
+
+                    // Flush the data so it doesn't fire again on the next actual pageview
+                    sessionStorage.removeItem(amKey);
+                }
+            }
+        } catch (e) {
+            // Ignore sessionStorage access errors (e.g. strict cross-domain iframes)
+        }
     }
 
     // Handle Events with linkTrackEvents respect

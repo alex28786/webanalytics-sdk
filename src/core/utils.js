@@ -1,9 +1,9 @@
-
 /**
  * Core Utilities for Adobe Analytics Shim
  * Extracted from legacy pageDataTracker
  */
 
+export const ORG_ID = "4D6368F454EC41940A4C98A6@AdobeOrg";
 /**
  * MD5 implementation
  * @param {string} s 
