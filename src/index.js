@@ -9,7 +9,7 @@ import { ORG_ID } from './core/utils.js';
 
 // Create Satellite Shim Namespace
 if (!window.__sShim) {
-    window.__sShim = { version: "2.5" };
+    window.__sShim = { version: "2.6" };
 }
 
 // Initialization IIFE (ECID)
@@ -103,6 +103,21 @@ window.s_onBeforeEventSendHook = function (content, ctx) {
     // 2) create s object for this hit
     // This replicates the `createHitS` logic
     const s = createHitS(ctx, eventName);
+
+    // Extract link tracking properties from XDM if they exist (for auto-tracked events)
+    // NOTE: createHitS defaults linkType to "o" and linkName to eventName/"manual_link_hit"
+    // for ALL non-page events.  We MUST override these defaults when the Web SDK has
+    // auto-tracked the real link type (exit/download) so that doPlugins can act on the
+    // correct values (e.g. eVar158 exit hostname extraction requires linkType === 'e').
+    if (content && content.xdm && content.xdm.web && content.xdm.web.webInteraction) {
+        const wi = content.xdm.web.webInteraction;
+        if (wi.type === 'exit')    { s.linkType = 'e'; }
+        else if (wi.type === 'download') { s.linkType = 'd'; }
+        if (wi.URL)  s.linkURL  = wi.URL;
+        if (wi.name) s.linkName = wi.name;
+        // Set linkObject so doPlugins exit‑link guard (s.linkObject && …) passes
+        s.linkObject = content.clickedElement || true;
+    }
 
     // 3) apply rules
     // (a) generic rule for ALL hits?

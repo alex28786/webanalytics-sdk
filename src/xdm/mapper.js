@@ -454,12 +454,19 @@ export function mapIntoXdm(s, xdm, context) {
         xdm.web.webInteraction = xdm.web.webInteraction || {};
         // Populate link details
         setIfEmpty(xdm.web.webInteraction, "URL", s.linkURL);
-        // DO NOT overwrite auto-tracked Web SDK name if already present (e.g. Scopus.com). 
-        // DO NOT force "manual_link_hit" or eventName over organic Web SDK values.
-        xdm.web.webInteraction.name = xdm.web.webInteraction.name || eventName || s.linkName || "custom_link";
+        
         // Type: "other" for custom, else mapped from AA, but keep existing if mapped is "other"
         const mappedType = mapLinkType(s.linkType);
         xdm.web.webInteraction.type = mappedType !== "other" ? mappedType : (xdm.web.webInteraction.type || "other");
+
+        // For exit links, store the link URL instead of the link name in the exit dimension
+        if (xdm.web.webInteraction.type === "exit") {
+            xdm.web.webInteraction.name = xdm.web.webInteraction.URL || s.linkURL || xdm.web.webInteraction.name || "exit_link";
+        } else {
+            // DO NOT overwrite auto-tracked Web SDK name if already present (e.g. Scopus.com). 
+            // DO NOT force "manual_link_hit" or eventName over organic Web SDK values.
+            xdm.web.webInteraction.name = xdm.web.webInteraction.name || eventName || s.linkName || "custom_link";
+        }
 
         // increment linkClicks counter unconditionally to flush pending activity map clicks
         xdm.web.webInteraction.linkClicks = xdm.web.webInteraction.linkClicks || {};
